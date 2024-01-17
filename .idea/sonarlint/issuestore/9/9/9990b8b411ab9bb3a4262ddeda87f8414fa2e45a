@@ -1,0 +1,10 @@
+
+t	java:S115"ZRename this constant name to match the regular expression '^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$'.(›ϊÿÿÿÿ
+8
+java:S2386"Make this member "protected".(έ„·®ÿÿÿÿÿ
+l
+java:S3457m"Q%n should be used in place of \n to produce the platform-specific line separator.(ίαΫ†ώÿÿÿÿ
+G
+java:S1068",Remove this unused "birthAge" private field.(ÿ„υδόÿÿÿÿ
+H
+java:S1068"-Remove this unused "fishState" private field.(±ªΎγόÿÿÿÿ
