@@ -3,128 +3,103 @@ package org.aquarium.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
+import org.aquarium.enums.FishState;
+import org.aquarium.enums.GenderEnum;
+import org.aquarium.util.PrintUtils;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.example.util.FishUtils.*;
-import static org.example.util.PrintUtils.*;
+import static org.aquarium.util.FishUtils.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class Fish extends Thread {
 
-    public static final List<Fish> fishList = Collections.synchronizedList(new ArrayList<>());
+    public static final List<Fish> FISH_LIST = Collections.synchronizedList(new ArrayList<>());
     private static final Lock lock = new ReentrantLock();
-    private static final int TreedSleepTime = 1000;
-    private Gender gender;
+    private static final int THREAD_SLEEP_TIME = 1000;
+
+
+    private GenderEnum gender;
     private Integer maxAge;
     private Integer birthAge;
     private FishState fishState;
-    private Integer happyDay;
+    private Integer weddingAge;
 
     @SneakyThrows
     @Override
     public void run() {
+
         for (int i = 1; i <= maxAge; i++) {
+
             this.birthAge = i;
-            Thread.sleep(TreedSleepTime);
+
+            Thread.sleep(THREAD_SLEEP_TIME);
 
             if (isChild(this)) {
                 this.fishState = FishState.CHILD;
             }
 
             lock.lock();
-            if (isMature(this) && !isMarried(this)) {
-                this.fishState = FishState.MATURE;
-                this.happyDay = happyDay();
+            try {
+                if (isMature(this) && !isMarried(this)) {
 
-                Optional<Fish> optionalFish = getHappyFish();
-                if (optionalFish.isPresent()) {
-                    Fish fish = optionalFish.get();
+                    this.fishState = FishState.MATURE;
+                    this.weddingAge = getWeddingAge();
 
-                    this.fishState = FishState.MARRIED;
-                    fish.fishState = FishState.MARRIED;
+                    Optional<Fish> optionalFish = getHusbandFish();
+                    if (optionalFish.isPresent()) {
+                        Fish fish = optionalFish.get();
 
-                    addFish(this, fish);
+                        this.fishState = FishState.MARRIED;
+                        fish.fishState = FishState.MARRIED;
+
+                        addBabyFish(this, fish);
+                    }
                 }
+            } catch (Exception ignored) {
+            } finally {
+                lock.unlock();
             }
-            lock.unlock();
 
-            if (isAdult(this)){
+            if (isAdult(this)) {
                 this.fishState = FishState.ADULT;
             }
 
             if (isTimeToDie(this)) {
                 this.fishState = FishState.DEAD;
-                printDead(this);
+                PrintUtils.printDead(this);
                 this.interrupt();
-                fishList.remove(this);
+                FISH_LIST.remove(this);
             }
         }
     }
 
-    public Fish(Gender gender, int maxAge) {
+    public Optional<Fish> getHusbandFish() {
+        for (Fish fish : FISH_LIST) {
+            if (Objects.equals(fish.getWeddingAge(), weddingAge) && this.gender != fish.getGender() && isMature(fish) && fish.getFishState() != FishState.MARRIED) {
+                return Optional.of(fish);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static void startTheAquarium() {
+        Result result = getResult();
+        System.out.printf("Tom akvariumga %d ta erkak va %d ta urg'ochi baliq tashladi \n", result.maleCount(), result.femaleCount());
+    }
+
+    public void addBabyFish(Fish father, Fish mother) {
+        Result result = getResult();
+        PrintUtils.printEvent(father, mother, result.maleCount(), result.femaleCount());
+    }
+
+    public Fish(GenderEnum gender, int maxAge) {
         this.fishState = FishState.BORN;
         this.birthAge = 0;
         this.gender = gender;
         this.maxAge = maxAge;
-    }
-
-
-
-    public  Optional<Fish> getHappyFish() {
-
-//        return fishList.stream()
-//                .filter(fish -> fish.getHappyDay() == happyDay && this.gender != fish.gender && isMature(fish) && fish.fishState != FishState.MARRIED)
-//                .findFirst();
-
-        for (int i = 0; i < fishList.size(); i++) {
-            if (Objects.equals(fishList.get(i).getHappyDay(), happyDay) && this.gender!=fishList.get(i).getGender()
-               && isMature(fishList.get(i)) && fishList.get(i).getFishState()!=FishState.MARRIED){
-               return Optional.of(fishList.get(i));
-            }
-        }
-         return Optional.empty();
-    }
-
-
-
-    public static void addFish() {
-        int maleCount = fishesCount();
-        int femaleCount = fishesCount();
-
-        for (int i = 0; i < maleCount; i++) {
-            Fish fish = new Fish(Gender.MALE, maxAge());
-            fishList.add(fish);
-            fish.start();
-        }
-
-        for (int i = 0; i < femaleCount; i++) {
-            Fish fish = new Fish(Gender.FEMALE, maxAge());
-            fishList.add(fish);
-            fish.start();
-        }
-        System.out.printf("boshida akvariumda %d ta ogil va %d ta qiz bor \n",maleCount,femaleCount);
-    }
-
-
-    public void addFish(Fish father, Fish mother) {
-        int maleCount = fishesCount();
-        int femaleCount = fishesCount();
-
-        for (int i = 0; i < maleCount; i++) {
-            Fish fish = new Fish(Gender.MALE, maxAge());
-            fishList.add(fish);
-            fish.start();
-        }
-
-        for (int i = 0; i < femaleCount; i++) {
-            Fish fish = new Fish(Gender.FEMALE, maxAge());
-            fishList.add(fish);
-            fish.start();
-        }
-        printMarriage(father, mother, maleCount,femaleCount);
     }
 }

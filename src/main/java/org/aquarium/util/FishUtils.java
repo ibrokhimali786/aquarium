@@ -1,64 +1,90 @@
 package org.aquarium.util;
 
 import lombok.experimental.UtilityClass;
-import org.example.model.Fish;
-import org.example.model.FishState;
-import org.example.model.Gender;
+import org.aquarium.enums.GenderEnum;
+import org.aquarium.model.Fish;
+import org.aquarium.enums.FishState;
+import org.aquarium.model.Result;
 
+import java.util.Objects;
 import java.util.Random;
+
+import static org.aquarium.enums.GenderEnum.MALE;
+import static org.aquarium.model.Fish.FISH_LIST;
 
 @UtilityClass
 public class FishUtils {
     private final Random ran = new Random();
-    private static final int OGILBOLA_BALIQ_KOTTA_YOSHI = 10;
-    private static final int QIZBOLA_BALIQ_KOTTA_YOSHI = 10;
-    private static final int FISH_MAX_AGE = 20;
+    private final int MALE_FISH_MAX_AGE = 10;
+    private final int FEMALE_FISH_MAX_AGE = 10;
+    private final int FISH_MAX_AGE = 20;
 
-    public static int maxAge() {
+    public int maxAge() {
         return ran.nextInt(FISH_MAX_AGE - 10, FISH_MAX_AGE);
     }
 
-    public static boolean isMature(Fish fish) {
+    public boolean isMature(Fish fish) {
         if (isMale(fish)) {
-            return fish.getBirthAge() >= OGILBOLA_BALIQ_KOTTA_YOSHI && fish.getBirthAge() <= OGILBOLA_BALIQ_KOTTA_YOSHI + 5;
-        }else {
-            return fish.getBirthAge() >= QIZBOLA_BALIQ_KOTTA_YOSHI && fish.getBirthAge() <= QIZBOLA_BALIQ_KOTTA_YOSHI + 5;
+            return fish.getBirthAge() >= MALE_FISH_MAX_AGE && fish.getBirthAge() <= MALE_FISH_MAX_AGE + 5;
+        } else {
+            return fish.getBirthAge() >= FEMALE_FISH_MAX_AGE && fish.getBirthAge() <= FEMALE_FISH_MAX_AGE + 5;
         }
     }
 
-    public static boolean isMarried(Fish fish) {
+    public boolean isMarried(Fish fish) {
         return fish.getFishState() == FishState.MARRIED;
     }
-    public static boolean isAdult(Fish fish) {
+
+    public boolean isAdult(Fish fish) {
         if (isMale(fish)) {
-            return fish.getBirthAge() > OGILBOLA_BALIQ_KOTTA_YOSHI + 5 && fish.getBirthAge() != fish.getMaxAge();
-        }else {
-            return fish.getBirthAge() > QIZBOLA_BALIQ_KOTTA_YOSHI + 5 && fish.getBirthAge() != fish.getMaxAge();
+            return fish.getBirthAge() > MALE_FISH_MAX_AGE + 5 && !fish.getBirthAge().equals(fish.getMaxAge());
+        } else {
+            return fish.getBirthAge() > FEMALE_FISH_MAX_AGE + 5 && !fish.getBirthAge().equals(fish.getMaxAge());
         }
     }
 
-    public static boolean isTimeToDie(Fish fish){
-        return fish.getBirthAge() == fish.getMaxAge();
+    public boolean isTimeToDie(Fish fish) {
+        return Objects.equals(fish.getBirthAge(), fish.getMaxAge());
     }
 
-
-    public static int fishesCount() {
-        return ran.nextInt(1, 6);
+    public int fishesCount() {
+        return ran.nextInt(5, 10);
     }
 
-    public static int happyDay() {
+    public int getWeddingAge() {
         return ran.nextInt(2, 4);
     }
 
-    public static boolean isChild(Fish fish){
-        if (isMale(fish)){
-            return fish.getBirthAge() < OGILBOLA_BALIQ_KOTTA_YOSHI;
-        }else {
-            return fish.getBirthAge() < QIZBOLA_BALIQ_KOTTA_YOSHI;
-        }
+    public boolean isChild(Fish fish) {
+        if (!isMale(fish)) return fish.getBirthAge() < FEMALE_FISH_MAX_AGE;
+        return fish.getBirthAge() < MALE_FISH_MAX_AGE;
     }
 
-    private static boolean isMale(Fish fish){
-        return fish.getGender() == Gender.MALE;
+    private boolean isMale(Fish fish) {
+        return fish.getGender() == MALE;
+    }
+
+    public Result getResult() {
+
+        int maleCount = 0;
+        int femaleCount = 0;
+        GenderEnum gender;
+
+        for (int i = 0; i < fishesCount(); i++) {
+
+            gender = getGender();
+
+            if (gender.equals(MALE)) maleCount++;
+            else femaleCount++;
+
+            Fish fish = new Fish(gender, maxAge());
+            FISH_LIST.add(fish);
+            fish.start();
+        }
+        return new Result(maleCount, femaleCount);
+    }
+
+    private static GenderEnum getGender() {
+        return ran.nextBoolean() ? GenderEnum.MALE : GenderEnum.FEMALE;
     }
 }

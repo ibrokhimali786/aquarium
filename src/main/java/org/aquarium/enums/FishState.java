@@ -1,4 +1,4 @@
-package org.aquarium.model;
+package org.aquarium.enums;
 
 public enum FishState {
     BORN,

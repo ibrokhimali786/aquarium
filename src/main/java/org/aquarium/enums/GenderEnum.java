@@ -1,5 +1,6 @@
-package org.aquarium.model;
+package org.aquarium.enums;
 
-public enum Gender {
+public enum GenderEnum {
     MALE, FEMALE
+
 }
