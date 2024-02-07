@@ -4,7 +4,6 @@ import lombok.experimental.UtilityClass;
 import org.aquarium.enums.GenderEnum;
 import org.aquarium.model.Fish;
 import org.aquarium.enums.FishState;
-import org.aquarium.model.Result;
 
 import java.util.Objects;
 import java.util.Random;
@@ -43,8 +42,19 @@ public class FishUtils {
         }
     }
 
+    public void changeState(Fish fish, FishState fishState) {
+        fish.setFishState(fishState);
+    }
+
     public boolean isTimeToDie(Fish fish) {
         return Objects.equals(fish.getBirthAge(), fish.getMaxAge());
+    }
+
+    public void toKill(Fish fish) {
+        fish.setFishState(FishState.DEAD);
+        PrintUtils.printDead(fish);
+        fish.interrupt();
+        FISH_LIST.remove(fish);
     }
 
     public int fishesCount() {
@@ -64,27 +74,7 @@ public class FishUtils {
         return fish.getGender() == MALE;
     }
 
-    public Result getResult() {
-
-        int maleCount = 0;
-        int femaleCount = 0;
-        GenderEnum gender;
-
-        for (int i = 0; i < fishesCount(); i++) {
-
-            gender = getGender();
-
-            if (gender.equals(MALE)) maleCount++;
-            else femaleCount++;
-
-            Fish fish = new Fish(gender, maxAge());
-            FISH_LIST.add(fish);
-            fish.start();
-        }
-        return new Result(maleCount, femaleCount);
-    }
-
-    private static GenderEnum getGender() {
+    public static GenderEnum getGenderRandom() {
         return ran.nextBoolean() ? GenderEnum.MALE : GenderEnum.FEMALE;
     }
 }
